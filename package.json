@@ -1,7 +1,7 @@
 {
-  "name": "ruifeng-data-governance",
+  "name": "ruifeng-data-governance-internal",
   "version": "3.0.0",
-  "description": "睿锋智链汽车配件数据治理技能 — 数据获取、数据校验、数据补充。Plan → Execute → Verify 循环框架",
+  "description": "【内部版·面向内部人员，命中后台补全完整价格 采购价/P1/P2/P3】睿锋智链汽车配件数据治理技能 — 数据获取、数据校验、数据补充。Plan → Execute → Verify 循环框架",
   "keywords": [
     "auto-parts",
     "data-governance",
@@ -10,11 +10,11 @@
     "claude-code-skill",
     "hermes-skill"
   ],
-  "author": "stoic16",
+  "author": "xyq127",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/stoic16/ruifeng-data-governance"
+    "url": "https://github.com/xyq127/ruifeng-quote-internal"
   },
   "files": [
     "SKILL.md",

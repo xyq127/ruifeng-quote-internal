@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * ruifeng-data-governance install script
+ * ruifeng-data-governance-internal install script
  *
  * Copies the skill to both Claude Code (~/.claude/skills/) and Hermes (~/.hermes/skills/).
  * Overwrites existing files to ensure sync from the single source of truth.
@@ -14,8 +14,8 @@ const os = require('os');
 
 const HOME = os.homedir();
 const TARGETS = [
-  path.join(HOME, '.claude', 'skills', 'ruifeng-data-governance'),
-  path.join(HOME, '.hermes', 'skills', 'ruifeng-data-governance'),
+  path.join(HOME, '.claude', 'skills', 'ruifeng-data-governance-internal'),
+  path.join(HOME, '.hermes', 'skills', 'ruifeng-data-governance-internal'),
 ];
 
 const SOURCE = __dirname;
@@ -78,7 +78,7 @@ for (const target of TARGETS) {
   console.log(`  Done: ${target}`);
 }
 
-console.log('ruifeng-data-governance installed successfully.');
+console.log('ruifeng-data-governance-internal installed successfully.');
 console.log('');
 console.log('注意: 本 skill 依赖 cli-anything-platform-service CLI 工具。');
 console.log('如尚未安装: pip install -e /path/to/cli-anything-platform-service[data-clean]');
