@@ -5,7 +5,8 @@
  * Copies the skill to both Claude Code (~/.claude/skills/) and Hermes (~/.hermes/skills/).
  * Overwrites existing files to ensure sync from the single source of truth.
  *
- * 依赖声明: CLI 工具 cli-anything-platform-service 需独立安装
+ * 依赖: 主路径为自包含脚本(Python3 + requests)；CLI 工具 cli-anything-platform-service 可选,
+ *   仅泰安联浏览器搜索/批量 Excel 等重流程需要独立安装:
  *   pip install -e /path/to/cli-anything-platform-service[data-clean]
  */
 const fs = require('fs');
@@ -80,5 +81,5 @@ for (const target of TARGETS) {
 
 console.log('ruifeng-quote-internal installed successfully.');
 console.log('');
-console.log('注意: 本 skill 依赖 cli-anything-platform-service CLI 工具。');
-console.log('如尚未安装: pip install -e /path/to/cli-anything-platform-service[data-clean]');
+console.log('提示: 日常查询/价格补全用自包含脚本即可(仅需 Python3 + requests)。');
+console.log('泰安联浏览器搜索/批量 Excel 等重流程才需可选 CLI: pip install -e /path/to/cli-anything-platform-service[data-clean]');
