@@ -1,5 +1,5 @@
 {
-  "name": "ruifeng-data-governance-internal",
+  "name": "ruifeng-quote-internal",
   "version": "3.0.0",
   "description": "【内部版·面向内部人员，命中后台补全完整价格 采购价/P1/P2/P3】睿锋智链汽车配件数据治理技能 — 数据获取、数据校验、数据补充。Plan → Execute → Verify 循环框架",
   "keywords": [

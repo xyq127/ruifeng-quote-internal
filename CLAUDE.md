@@ -4,14 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 这个仓库是什么
 
-本仓库是一个 **skill 分发包**，不是可运行的应用。它的产物是一份 Markdown 驱动的 Agent 技能 `ruifeng-data-governance-internal`（睿锋智链汽车配件数据治理），通过 `npm install` 安装到本地两个位置供 Claude Code / Hermes 加载：
+本仓库是一个 **skill 分发包**，不是可运行的应用。它的产物是一份 Markdown 驱动的 Agent 技能 `ruifeng-quote-internal`（显示名「睿锋-内部询价」），通过 `npm install` 安装到本地两个位置供 Claude Code / Hermes 加载：
 
-- `~/.claude/skills/ruifeng-data-governance-internal/`
-- `~/.hermes/skills/ruifeng-data-governance-internal/`
+- `~/.claude/skills/ruifeng-quote-internal/`
+- `~/.hermes/skills/ruifeng-quote-internal/`
 
 仓库本身几乎不含业务执行代码 —— 真正干活的 `data-clean` CLI 命令由**独立仓库** `cli-anything-platform-service` 提供（Python，`pip install -e <path>[data-clean]`）。本仓库只定义工作流、规则、参考资料，告诉 Agent **何时、如何**调用那些 CLI 命令。
 
-> 注意：磁盘目录名为 `ruifeng-quote-internal`，但包名/技能名已更名为 `ruifeng-data-governance-internal`（v3.0.0 重构）。两个名字在文档里都会出现。
+> 命名沿革：包名 / 技能 slug 统一为 `ruifeng-quote-internal`（与仓库文件夹一致，兼容 VS Code agent 规范）；中文显示名为「睿锋-内部询价」，保留在各 SKILL.md 的正文标题与 `metadata.displayName`。历史文档里可能仍出现旧名「睿锋数据治理」/`ruifeng-data-governance-internal`。
 
 ## 常用命令
 ```bash
@@ -37,7 +37,7 @@ bash scripts/scan-backend.sh
 用户 / Hermes Agent
    │  加载技能
    ▼
-ruifeng-data-governance-internal skill（本仓库）   ──引用──►   cli-anything-platform-service CLI（独立 Python 仓库）
+ruifeng-quote-internal skill（本仓库）   ──引用──►   cli-anything-platform-service CLI（独立 Python 仓库）
    编排工作流 / 数据源选择 / 规则约束                    data-clean 命令组：parse / oe-query /
                                                        backend-search / epc-query /
                                                        taianlian-search / cross-validate / ...
