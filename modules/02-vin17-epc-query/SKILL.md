@@ -16,10 +16,9 @@ metadata:
 
 ## 认证信息
 
-- **API 基础地址**: `http://api.17vin.com:8080`
-- **用户名**: `ruifengzhilian`
-- **密码**: `JSD9Wd2`
-- **文档地址**: `https://www.17vin.com/doc/1003.html?user=ruifengzhilian&pass=JSD9Wd2`
+- **API 基础地址**: `http://api.17vin.com:8080`（可用环境变量 `17VIN_API` 覆盖）
+- **用户名 / 密码**: **不在文档或代码中硬编码。** 从环境变量 `17VIN_USERNAME` / `17VIN_PASSWORD` 或个人配置 `~/.cli-anything-platform-service/config.json` 的 `vin17` 段读取（用 `python scripts/personal_config.py init` 录入；解析顺序见 `scripts/vin17_epc.py`）。
+- **文档地址**: `https://www.17vin.com/doc/1003.html`（登录后查看；账号见个人配置）
 
 ## Token 生成算法
 
@@ -31,7 +30,7 @@ def generate_token(username: str, password: str, url_params: str) -> str:
     Token 算法: MD5(MD5(username) + MD5(password) + url_parameters)
     
     ⚠️ 关键：url_params 必须包含开头的 /?
-    例如: "/?action=brands&user=ruifengzhilian"
+    例如: "/?action=brands&user=<USERNAME>"
     """
     username_md5 = hashlib.md5(username.encode()).hexdigest()
     password_md5 = hashlib.md5(password.encode()).hexdigest()
@@ -109,10 +108,12 @@ import urllib.request
 import urllib.parse
 import json
 import time
+import os
 
-USERNAME = "ruifengzhilian"
-PASSWORD = "JSD9Wd2"
-BASE_URL = "http://api.17vin.com:8080"
+# 凭据从环境变量/个人配置读取，切勿硬编码（解析顺序见 scripts/vin17_epc.py）
+USERNAME = os.environ["17VIN_USERNAME"]
+PASSWORD = os.environ["17VIN_PASSWORD"]
+BASE_URL = os.environ.get("17VIN_API", "http://api.17vin.com:8080")
 
 def call_api(url: str) -> dict:
     """调用 API，返回 JSON"""

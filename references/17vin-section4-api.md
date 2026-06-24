@@ -16,11 +16,17 @@
 
 ## API 凭证
 
+**切勿在代码/文档中硬编码账号密码。** 凭据从环境变量或个人配置读取（解析顺序见 `scripts/vin17_epc.py`：环境变量 → `~/.cli-anything-platform-service/config.json` 的 `vin17` 段）：
+
 ```python
-USERNAME = "ruifengzhilian"
-PASSWORD = "JSD9Wd2"
-BASE = "http://api.17vin.com:8080"
+import os
+
+USERNAME = os.environ["17VIN_USERNAME"]   # 或从 personal_config 读取
+PASSWORD = os.environ["17VIN_PASSWORD"]
+BASE = os.environ.get("17VIN_API", "http://api.17vin.com:8080")
 ```
+
+> 实际查询直接用封装好的 `python scripts/vin17_epc.py oe --oe <OE号>`，无需自己拼凭据；本文档的 Python 仅作算法说明。账号用 `python scripts/personal_config.py init` 录入。
 
 ## 认证（Token 算法）
 
