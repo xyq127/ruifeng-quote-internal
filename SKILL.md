@@ -1,19 +1,21 @@
 ---
-name: 睿锋-内部询价
-description: "【内部版·面向内部人员，命中后台补全完整价格 采购价/P1/P2/P3】睿锋智链汽车配件数据治理 — Plan → Execute → Verify 循环框架。覆盖数据获取（多源OE查询）、数据校验（三位一体交叉验证）、数据补充（缺失数据回写）。数据源优先级: 泰安联≈17vin > 电商平台。编号选取优先级: 主机大厂OE > 关联编号大厂 > 其他小厂。"
-version: 3.0.0
-author: Hermes Agent
-category: data-governance
-changelog: |
-  3.0.0 (2026-06-17): 架构重构 — Plan→Execute→Verify 循环框架；CLI 拆分为独立仓库 cli-anything-platform-service；新增 workflows/ 目录定义核心工作流；项目更名为「睿锋数据治理」
-  2.2.0 (2026-06-15): 跨平台改造（自管 Chrome + Python 环境自动检测）；新增 CDP 连接与登录引导流程；新增子技能"快速OE查询"
-  2.1.0 (2026-06-13): 新增产品报价核心链路 quote-match；地基改进：backend-search 归一化多轮重试链
-  2.0.x (2026-06-04~12): 初始版本 — 工厂编号解析、OE交叉验证、多源查询、参数回写
-depends_on:
-  - 工厂编号解析
-  - 17vin-EPC查询
-  - 泰安联TecDoc搜索
-  - 快速OE查询
+name: ruifeng-quote-internal
+description: "【内部版·面向内部人员，命中后台补全完整价格 采购价/P1/P2/P3】睿锋-内部询价 — Plan → Execute → Verify 循环框架。覆盖数据获取（多源OE查询）、数据校验（三位一体交叉验证）、数据补充（缺失数据回写）。数据源优先级: 泰安联≈17vin > 电商平台。编号选取优先级: 主机大厂OE > 关联编号大厂 > 其他小厂。"
+metadata:
+  displayName: 睿锋-内部询价
+  version: 3.0.0
+  author: Hermes Agent
+  category: data-governance
+  depends_on:
+    - 工厂编号解析
+    - 17vin-EPC查询
+    - 泰安联TecDoc搜索
+    - 快速OE查询
+  changelog: |
+    3.0.0 (2026-06-17): 架构重构 — Plan→Execute→Verify 循环框架；CLI 拆分为独立仓库 cli-anything-platform-service；新增 workflows/ 目录定义核心工作流；项目更名为「睿锋数据治理」
+    2.2.0 (2026-06-15): 跨平台改造（自管 Chrome + Python 环境自动检测）；新增 CDP 连接与登录引导流程；新增子技能"快速OE查询"
+    2.1.0 (2026-06-13): 新增产品报价核心链路 quote-match；地基改进：backend-search 归一化多轮重试链
+    2.0.x (2026-06-04~12): 初始版本 — 工厂编号解析、OE交叉验证、多源查询、参数回写
 ---
 
 # 睿锋-内部询价
