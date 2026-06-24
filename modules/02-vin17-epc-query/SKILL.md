@@ -1,9 +1,11 @@
 ---
-name: 17vin-EPC查询
+name: 02-vin17-epc-query
 description: 当用户需要通过 17vin API 查询车型 EPC 目录、进行 OE 反向查询、搜索轮毂轴承配件，或进行品牌-车型-年款-配件树遍历时使用。包含 token 生成、车型查询、目录遍历、配件搜索全流程。
-version: 1.0.0
-author: Hermes Agent
-category: data-cleaning
+metadata:
+  displayName: 17vin-EPC查询
+  version: 1.0.0
+  author: Hermes Agent
+  category: data-cleaning
 ---
 
 # 17vin EPC 查询

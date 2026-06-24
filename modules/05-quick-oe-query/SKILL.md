@@ -1,9 +1,11 @@
 ---
-name: 快速OE查询
+name: 05-quick-oe-query
 description: 根据 OE 号、DAC 编码或尺寸，快速查询泰安联 TecDoc + 17vin，返回 OE 互换号、品牌件和适用车型。优先使用 CLI 命令（秒级），不可用时降级浏览器操作。
-version: 1.0.0
-author: Hermes Agent
-category: data-cleaning
+metadata:
+  displayName: 快速OE查询
+  version: 1.0.0
+  author: Hermes Agent
+  category: data-cleaning
 ---
 
 # 快速 OE 查询

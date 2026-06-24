@@ -1,9 +1,11 @@
 ---
-name: 工厂编号解析
+name: 01-factory-number-parser
 description: 当用户需要解析雷迪克（Radick）工厂编号（DAC/DU/RAH 格式），提取内径、外径、变型、高度、ABS 齿数等物理参数，或生成 8 位核心编号用于后续 TecDoc/17vin 搜索时使用。数据治理流程的起点。
-version: 1.0.1
-author: Hermes Agent
-category: data-governance
+metadata:
+  displayName: 工厂编号解析
+  version: 1.0.1
+  author: Hermes Agent
+  category: data-governance
 ---
 
 # 雷迪克工厂编号解析

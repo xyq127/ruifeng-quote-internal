@@ -7,10 +7,10 @@ metadata:
   author: Hermes Agent
   category: data-governance
   depends_on:
-    - 工厂编号解析
-    - 17vin-EPC查询
-    - 泰安联TecDoc搜索
-    - 快速OE查询
+    - 01-factory-number-parser
+    - 02-vin17-epc-query
+    - 04-taianlian-tecdoc-search
+    - 05-quick-oe-query
   changelog: |
     3.0.0 (2026-06-17): 架构重构 — Plan→Execute→Verify 循环框架；CLI 拆分为独立仓库 cli-anything-platform-service；新增 workflows/ 目录定义核心工作流；项目更名为「睿锋数据治理」
     2.2.0 (2026-06-15): 跨平台改造（自管 Chrome + Python 环境自动检测）；新增 CDP 连接与登录引导流程；新增子技能"快速OE查询"
@@ -321,10 +321,10 @@ Agent 执行任何需要泰安联 TecDoc 的操作前，需确认 CDP 连接和�
 
 | 子技能 | 文件 | 用途 |
 |--------|------|------|
-| 工厂编号解析 | `modules/01-工厂编号解析/SKILL.md` | 解析 DAC/DU/RAH 格式 |
-| 17vin-EPC查询 | `modules/02-17vin-EPC查询/SKILL.md` | 17vin API + 网页端查询 |
-| 泰安联TecDoc搜索 | `modules/04-泰安联TecDoc搜索/SKILL.md` | 浏览器 CDP 搜索 TecDoc |
-| 快速OE查询 | `modules/05-快速OE查询/SKILL.md` | 一键 OE 查询（CLI 优先） |
+| 工厂编号解析 | `modules/01-factory-number-parser/SKILL.md` | 解析 DAC/DU/RAH 格式 |
+| 17vin-EPC查询 | `modules/02-vin17-epc-query/SKILL.md` | 17vin API + 网页端查询 |
+| 泰安联TecDoc搜索 | `modules/04-taianlian-tecdoc-search/SKILL.md` | 浏览器 CDP 搜索 TecDoc |
+| 快速OE查询 | `modules/05-quick-oe-query/SKILL.md` | 一键 OE 查询（CLI 优先） |
 
 ---
 
