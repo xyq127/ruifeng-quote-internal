@@ -34,7 +34,7 @@
 │  (Windows 调试端口)      │    │                       │    │                 │
 ├─────────────────────────┤    ├───────────────────────┤    ├─────────────────┤
 │ localhost:9250           │    │ rfscm.com REST API    │    │ Excel .xlsx/.xls │
-│ --user-data-dir 持久化   │    │ api.17vin.com:8080    │    │ CSV 输出         │
+│ --user-data-dir 持久化   │    │ www.17vin.com (CDP)   │    │ CSV 输出         │
 │ --remote-allow-origins=* │    │ 电商平台 (淘宝/京东/1688) │    │ Profile 持久化   │
 │ 无头 / 有头模式           │    │ tecalliance.cn (CDP)  │    │                  │
 └─────────────────────────┘    └───────────────────────┘    └─────────────────┘
@@ -102,8 +102,7 @@ CloakBrowser 是一个隐形 Chromium 浏览器（58 个 C++ 隐身补丁），�
 | 数据源 | 访问方式 | 用途 | 覆盖率 |
 |--------|---------|------|--------|
 | rfscm.com | REST API (Bearer Token) | 内部产品库查询 | 已录入产品 |
-| api.17vin.com:8080 | REST API (MD5 Token) | EPC 目录查询 | 欧美日系品牌 |
-| www.17vin.com | CDP 浏览器 | 网页端 EPC | 全部品牌 |
+| www.17vin.com | CDP 浏览器 | 网页端 EPC（partsearch + EPC 树；付费 API 已停用） | 欧美日系品牌 |
 | tecalliance.cn | CDP 浏览器 | TecDoc 搜索 | 国际品牌为主 |
 | yiparts.com | CDP 浏览器 | 辅助验证 | 中国品牌补充 |
 | taobao.com/jd.com/1688.com | web_search 抓取 | OE 兜底验证 | 中国品牌及冷门车型 |

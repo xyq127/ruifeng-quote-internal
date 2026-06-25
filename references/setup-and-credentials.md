@@ -11,9 +11,9 @@ python scripts/personal_config.py init     # 交互式录入（密码用 getpass
 python scripts/personal_config.py show     # 查看状态（密码/Key 自动打码）
 ```
 
-- **存储位置**：`~/.cli-anything-platform-service/config.json`（权限 `0o600` 仅本人可读；`RUIFENG_CONFIG` 可改路径）。与睿锋/17vin 自包含模块、RayForm-CLI **共用同一文件**，token 互通。
+- **存储位置**：`~/.cli-anything-platform-service/config.json`（权限 `0o600` 仅本人可读；`RUIFENG_CONFIG` 可改路径）。与睿锋自包含模块、17vin 网页登录凭据、RayForm-CLI **共用同一文件**，token 互通。
 - **不随 skill 分发**：该文件在用户 `$HOME` 下，`npm install` 重装 skill **不会覆盖或读取它**；仓库内只有无密钥的模板 `scripts/config.example.json` 供参考。
-- 所有自包含脚本（`ruifeng_platform.py` / `vin17_epc.py` / `recognize_image.py`）都从这份配置读凭据；环境变量（`SILICONFLOW_API_KEY`、`17VIN_*`、`PLATFORM_*`）始终可临时覆盖。
+- 自包含脚本（`ruifeng_platform.py` / `recognize_image.py`）从这份配置读凭据；17vin 段（用户名/密码）供网页登录使用。环境变量（`SILICONFLOW_API_KEY`、`PLATFORM_*`）始终可临时覆盖。
 
 ### 首次运行检测的退出码语义
 
@@ -47,16 +47,9 @@ python scripts/ruifeng_platform.py price --product-id <ID> --json # 采购价/P1
 
 **登录态自愈：** 查询链路优先直连睿锋平台；任意查询遇到登录态失效（HTTP 401/403，或 HTTP 200 但 `body.code=401` / `status=false` 且消息含「登录/token/失效/过期」）时，**立即用已存账号密码自动重登一次并重试**，新 token 落盘复用，全程无需人工介入。自动重登要求 `login` 时把密码写入配置（文件 `0o600` 仅本用户可读）；首次无 token 但已存凭据时也会自动登录。如需更高安全性，`login --no-save-password` 可不落盘密码（此时失效需手动重新 `login`）。
 
-### 17vin EPC（`scripts/vin17_epc.py`，纯 HTTP）
+### 17vin 网页登录凭据（浏览器 CDP，付费 API 已停用）
 
-OE 互换 / 大厂关联件 / 适配车型全部内置：
-
-```bash
-python scripts/vin17_epc.py config-set --username <用户名>   # 密码交互输入，写入配置(0o600)
-python scripts/vin17_epc.py oe --oe 31110-RAA-A01 --json     # 互换OE/品牌件/车型(三步链)
-```
-
-凭据解析顺序：环境变量 `17VIN_USERNAME`/`17VIN_PASSWORD` → 配置 `vin17` 段（与睿锋共用 config.json）。**不在分发的 skill 里硬编码账号。** 确保 `no_proxy` 包含 `api.17vin.com`。
+17vin 查询统一走浏览器（`www.17vin.com` partsearch / EPC 树），需先登录网页。账号密码用 `python scripts/personal_config.py init` 录入到配置 `vin17` 段（用户名/密码，文件 `0o600`），供人工或 CDP 自动登录使用——**不在分发的 skill 里硬编码账号**。查询路径见 `modules/02-vin17-epc-query/SKILL.md` 与 `references/17vin-web-navigation.md`。
 
 ## 可选路径：CLI 工具（仅重流程需要）
 

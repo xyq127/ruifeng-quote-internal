@@ -9,7 +9,7 @@
     }
   },
   "vin17": {
-    "api_base": "http://api.17vin.com:8080",
+    "_说明": "17vin 网页登录凭据（浏览器 CDP 使用，付费 API 已停用）",
     "username": "<17vin 用户名>",
     "password": "<17vin 密码>"
   },

@@ -66,10 +66,9 @@ url = f"https://www.17vin.com/models.html?p={b64}"
 
 3. **搜索重定向：** "配件名称搜索" 可能重定向到 `/brand.html`，建议用 URL 构造而非搜索框。
 
-## 路径三：API (api.17vin.com:8080)
+## 路径三：API (api.17vin.com:8080) — 已停用
 
-仅支持 OEM 号反向查询（Section 4: 4001/4004/40031），不支持车型搜索。
-详见 `17vin-section4-api.md`。
+旧的付费 REST API（MD5 token 鉴权、按次收费）已停用，不再使用。17vin 查询统一走上面的浏览器 partsearch（路径一）与 EPC 树导航（路径二）。
 
 ## 已测试品牌覆盖
 

@@ -47,7 +47,7 @@ data-clean oe-query --query <OE号/DAC编码/尺寸>
    - 搜索 URL：`https://www.tecalliance.cn/cn/search/1?q={关键词}&numbersearchinput=1&searchtype=0&status=1`
 3. **导航到搜索 URL**（使用 CDP 连接）
 4. **提取结果**：读取页面文本，识别品牌名（全大写行）和 OE 号（6-15 位数字）
-5. **17vin 补充**：泰安联无结果时，调用 17vin Section 4 API 查互换号
+5. **17vin 补充**：泰安联无结果时，用浏览器 partsearch（`www.17vin.com/partsearch/{OE}.html`）查互换号
 
 ## 输入类型自动识别
 
@@ -55,7 +55,7 @@ data-clean oe-query --query <OE号/DAC编码/尺寸>
 |---------|------|---------|------|
 | 尺寸 `dxDxB` | `45x84x45` | 正则 `(\d+)[xX*,\s](\d+)[xX*,\s](\d+)` | → DAC 编码搜索泰安联 |
 | DAC 编码 8-10位 | `45840045` | 正则 `^\d{8,10}$` | → 直接搜索泰安联 |
-| OE 号 | `31110-RAA-A01` | 兜底 | → 走 17vin Section 4 |
+| OE 号 | `31110-RAA-A01` | 兜底 | → 走 17vin 网页 partsearch |
 
 ## 结果输出格式
 

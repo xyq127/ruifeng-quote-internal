@@ -3,10 +3,10 @@
 
 每个用户**首次使用前跑一次** `init` 向导，把以下个人凭据集中写入同一个配置文件
 （默认 `~/.cli-anything-platform-service/config.json`，0o600 仅本人可读；
- `RUIFENG_CONFIG` 可改路径，与睿锋/17vin 自包含模块共用同一文件）：
+ `RUIFENG_CONFIG` 可改路径，与睿锋自包含模块共用同一文件）：
 
   - 睿锋平台：登录手机号 + 密码（+ 环境/base_url）   → ruifeng_platform.py 使用
-  - 17vin   ：用户名 + 密码                          → vin17_epc.py 使用
+  - 17vin   ：用户名 + 密码                          → 17vin 网页登录（浏览器 CDP）
   - qwen-vision：SiliconFlow API Key                 → recognize_image.py 使用
 
 密钥全部由用户在交互式提示中输入（密码用 getpass，不进命令行/历史），
@@ -37,7 +37,6 @@ from ruifeng_platform import (  # noqa: E402
 )
 
 SILICONFLOW_KEY = "siliconflow_api_key"
-VIN17_DEFAULT_API = "http://api.17vin.com:8080"
 
 
 # ── 取值（供其他脚本 import） ─────────────────────────────────────────
@@ -89,11 +88,9 @@ def cmd_init(args):
     if pwd:
         ec["password"] = pwd
 
-    # 2) 17vin
-    print("\n— 17vin EPC —")
+    # 2) 17vin（网页登录凭据，供浏览器 CDP 使用）
+    print("\n— 17vin 网页登录 —")
     v = cfg.setdefault("vin17", {})
-    v.setdefault("api_base", VIN17_DEFAULT_API)
-    v["api_base"] = _prompt_keep("17vin api_base", v.get("api_base")) or VIN17_DEFAULT_API
     user = _prompt_keep("17vin 用户名", v.get("username"))
     if user:
         v["username"] = user
@@ -123,14 +120,14 @@ def cmd_show(args):
               f"手机号={ec.get('mobile') or '(未设置)'} 密码={_mask(ec.get('password'))} "
               f"token={'有' if ec.get('token') else '无'}")
     v = cfg.get("vin17", {}) if isinstance(cfg.get("vin17"), dict) else {}
-    print(f"   17vin api_base={v.get('api_base') or VIN17_DEFAULT_API} "
-          f"用户名={v.get('username') or '(未设置)'} 密码={_mask(v.get('password'))}")
+    print(f"   17vin（网页登录）用户名={v.get('username') or '(未设置)'} "
+          f"密码={_mask(v.get('password'))}")
     print(f"   qwen-vision SiliconFlow Key={_mask(get_siliconflow_key(cfg))}")
 
 
 _FEATURE_LABELS = {
     "ruifeng": "睿锋登录（手机号 + 密码）",
-    "vin17": "17vin（用户名 + 密码）",
+    "vin17": "17vin 网页登录（用户名 + 密码）",
     "qwen": "qwen-vision（SiliconFlow API Key）",
 }
 
@@ -167,7 +164,6 @@ _FLAT_KEYS = {
     "siliconflow_api_key": ("root", SILICONFLOW_KEY),
     "vin17_username": ("vin17", "username"),
     "vin17_password": ("vin17", "password"),
-    "vin17_api_base": ("vin17", "api_base"),
     "ruifeng_mobile": ("env", "mobile"),
     "ruifeng_password": ("env", "password"),
     "ruifeng_base_url": ("env", "base_url"),

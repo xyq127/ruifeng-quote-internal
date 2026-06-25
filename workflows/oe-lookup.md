@@ -33,7 +33,7 @@
 | **轮毂单元编号** | 从后台取参数 → oe-query → verify |
 | **尺寸规格** | oe-query(dimensions) → backend-search → verify |
 | **OE/关联编号** | backend-search → backend-detail → cross-validate → verify |
-| **车型描述** | 行话翻译(查表) → 17vin 车型搜索(自包含) / 泰安联 → verify |
+| **车型描述** | 行话翻译(查表) → 17vin 网页 EPC 搜索(CDP) / 泰安联 → verify |
 | **无法识别** | 询问用户明确输入类型 |
 
 ### Step 3: 数据源策略
@@ -94,29 +94,26 @@ cli-anything-platform-service --json data-clean parse <编号>
 
 **失败处理：** `is_parsable: false` → 标记 "无法解析"，跳过 Step 2，直接进入 Step 3 用原始编号搜索后台。
 
-### Step 2: 多源 OE 查询（17vin 自包含 + 泰安联 CLI）
+### Step 2: 多源 OE 查询（17vin 网页 CDP + 泰安联 CLI）
 
-17vin 是纯 HTTP，已**自包含**（`scripts/vin17_epc.py`，无需 CLI）；泰安联是浏览器
-CDP 方式，仍走 CLI。两源同级并行，任一命中即可进 verify。
+17vin 与泰安联**都走浏览器 CDP**（17vin 付费 API 已停用）。两者共享同一 Chrome
+实例，**必须顺序执行、不可并行**；任一命中即可进 verify。
 
-**2a — 17vin（自包含，HTTP，OE 互换/品牌件/车型）：**
-```bash
-python scripts/vin17_epc.py oe --oe "31110-RAA-A01" --json
+**2a — 17vin（浏览器 CDP，partsearch 优先，OE 互换/品牌件/车型）：**
+以 **OE 号**为输入，导航到配件搜索页快速验证：
 ```
-输出：
-```json
-{
-  "oe": "31110-RAA-A01",
-  "oes": ["90363-45050"],              // 互换 OE
-  "brand_parts": ["SKF:BAH-0012"],     // 大厂关联编号（SKF/NSK/FAG/...）
-  "vehicles": ["Toyota Corolla 2003"]  // 适配车型
-}
+https://www.17vin.com/partsearch/31110RAAA01.html
 ```
-> 17vin 互换接口以 **OE 号**为输入。DAC 编码/尺寸输入应先经 Step 1 解析或泰安联拿到 OE，再回喂本步。
+- OE 去掉横杠/点/空格只保留字母数字；页面返回品牌、标准化配件号、替换号列表（SKF/Gates/INA…）、「适用车型和替换号」链接。
+- 点链接进 `modellist/{OE}/{group_id}.html` 看配件名称（判断张紧器/皮带/惰轮）、原厂/普通替换号、适用车型。
+- partsearch 无收录（德系/美系/自主品牌）→ 转 EPC 树导航。
+- 详见 `references/17vin-partsearch-fast-verify.md`、`references/17vin-web-navigation.md`，操作要点见 `modules/02-vin17-epc-query/SKILL.md`。
+
+> DAC 编码/尺寸输入应先经 Step 1 解析或泰安联拿到 OE，再回喂本步。
 
 **2b — 泰安联（CLI，浏览器 CDP；DAC 编码/尺寸首选）：**
 ```bash
-# 一代轴承 DAC 编码；--skip-17vin 因 17vin 已由 2a 自包含完成
+# 一代轴承 DAC 编码；--skip-17vin 因 17vin 已由 2a 浏览器完成
 cli-anything-platform-service --json data-clean oe-query --query "45840045" --skip-17vin
 # 尺寸规格
 cli-anything-platform-service --json data-clean oe-query --query "45x84x45" --skip-17vin
@@ -124,7 +121,7 @@ cli-anything-platform-service --json data-clean oe-query --query "45x84x45" --sk
 
 **失败处理：**
 - 泰安联不可达（CDP 9250 不通）→ 跳过 2b，仅用 17vin（2a）
-- 17vin API 返回 503 / 连接异常 → 检查 `no_proxy` 环境变量后重试；`vin17_epc.py` 内部已重试 2 次并优雅降级为空结果
+- 17vin 网页无结果 / 未收录该 OE → 该源标记空，继续其他源
 - 两源均无结果 → 进入电商兜底 (Step 4)
 
 ### Step 3: 后台已有记录查询

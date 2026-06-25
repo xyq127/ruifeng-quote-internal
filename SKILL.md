@@ -1,5 +1,5 @@
 ---
-name: ruifeng-quote-internal
+name: 睿锋-内部询价
 description: "【内部版·面向内部人员，输出完整价格 采购价/P1/P2/P3，区别于只展示售价的客户版】睿锋-内部询价：汽车配件 OE/工厂编号(DAC/DU/RAH)/尺寸/车型配件 → 多源查询+交叉验证，命中睿锋后台后补全完整价格（采购价、OEM价P1、品牌一级销售价P2、品牌二级销售价P3）。当内部人员要查配件采购成本/进价、做内部报价、批量补全报价单的采购价与各级价格、或查 OE/关联编号/工厂编号/车型配件并要看全价时使用，即使没明说『内部询价』也应触发。遵循 Plan→Execute→Verify：数据源优先级 泰安联≈17vin > 睿锋后台 > 电商(需3家店铺一致)；编号选取 主机大厂OE > 大厂关联编号(SKF/NSK/FAG) > 其他小厂。"
 metadata:
   displayName: 睿锋-内部询价
@@ -27,7 +27,7 @@ metadata:
 
 ## 首次配置与依赖（速览）
 
-查询的**主路径是自包含脚本**（`scripts/ruifeng_platform.py` 睿锋平台、`scripts/vin17_epc.py` 17vin EPC），仅需 Python3 + requests，装好本 skill 即可用，**不依赖 CLI**。`data-clean` CLI 为可选，仅泰安联浏览器搜索/报价匹配等重流程才需要（见下方说明）。
+睿锋平台查询的**主路径是自包含脚本**（`scripts/ruifeng_platform.py`），仅需 Python3 + requests，装好本 skill 即可用，**不依赖 CLI**。17vin 查询走**浏览器 CDP**（`www.17vin.com` partsearch / EPC 树，付费 API 已停用）；泰安联浏览器搜索、报价匹配等重流程用可选的 `data-clean` CLI（见下方说明）。
 
 个人凭据（睿锋手机号+密码、17vin 用户名+密码、SiliconFlow Key）集中存于 `~/.cli-anything-platform-service/config.json`（`0o600`，与各模块共用、token 互通），用 `python scripts/personal_config.py init` 录入。
 
@@ -222,7 +222,7 @@ AI 训练知识在 OE 匹配中存在根本性错误（配件类型错误、发�
 | 错误 | 处理 |
 |------|------|
 | 泰安联+17vin 均无结果 | 走电商平台；仍无结果标记"待工厂确认" |
-| 17vin API 返回 503 | 检查 `no_proxy` — 代理会阻断 `api.17vin.com:8080` |
+| 17vin 网页无收录该 OE | partsearch 无结果属正常（德系/美系/自主品牌）→ 转 EPC 树或泰安联 |
 | CDP 9250 不通 | 检查 Chrome 调试端口，或自动尝试启动 |
 | 电商结果不一致 | 多店铺一致的 + 实物图钢印优先；冲突标注"待工厂确认" |
 | 后台搜索无结果 | 标记"需补充"继续，不阻断后续 |
@@ -244,17 +244,15 @@ AI 训练知识在 OE 匹配中存在根本性错误（配件类型错误、发�
 | 产品详情 | `python scripts/ruifeng_platform.py product --product-id <ID>` |
 | **价格查询(采购价/P1/P2/P3)** | `python scripts/ruifeng_platform.py price --product-id <ID> --json` |
 
-### 17vin EPC（`scripts/vin17_epc.py`，纯 HTTP）
+### 17vin 网页查询（浏览器 CDP，付费 API 已停用）
 
-| 操作 | 命令 |
+| 操作 | 路径 |
 |------|------|
-| 配置凭据 | `python scripts/vin17_epc.py config-set --username <用户名>` |
-| 查看凭据状态 | `python scripts/vin17_epc.py config-show` |
-| OE 互换/品牌件/车型 | `python scripts/vin17_epc.py oe --oe <OE号> --json` |
-| OE 反查配件 | `python scripts/vin17_epc.py parts --oe <OE号> --json` |
-| 车型关键词搜索 | `python scripts/vin17_epc.py vehicle --keyword <车型> --json` |
+| 配件号快速验证 | `https://www.17vin.com/partsearch/{去掉横杠点空格的OE}.html` |
+| 适用车型/替换号 | partsearch 页内「适用车型和替换号」链接 → `modellist/{OE}/{group_id}.html` |
+| 车型 EPC 树导航 | 车型列表页 → cata1 → cata2 → partlist（partsearch 无收录时） |
 
-所有命令支持 `--json` 输出。认证：`login` 登录获取 token，token 落盘复用。
+网页需登录（账号密码存于 config.json `vin17` 段）。操作细节见 `modules/02-vin17-epc-query/SKILL.md`、`references/17vin-web-navigation.md`、`references/17vin-partsearch-fast-verify.md`。与泰安联共享 Chrome，**顺序执行不可并行**。
 
 **可选——`data-clean` CLI（`cli-anything-platform-service` 提供，仅自包含脚本未覆盖的重流程才用）：**
 
@@ -278,7 +276,7 @@ AI 训练知识在 OE 匹配中存在根本性错误（配件类型错误、发�
 | 子技能 | 文件 | 用途 |
 |--------|------|------|
 | 工厂编号解析 | `modules/01-factory-number-parser/SKILL.md` | 解析 DAC/DU/RAH 格式 |
-| 17vin-EPC查询 | `modules/02-vin17-epc-query/SKILL.md` | 17vin API + 网页端查询 |
+| 17vin网页查询 | `modules/02-vin17-epc-query/SKILL.md` | 17vin 网页端 CDP 查询（partsearch + EPC 树） |
 | 泰安联TecDoc搜索 | `modules/04-taianlian-tecdoc-search/SKILL.md` | 浏览器 CDP 搜索 TecDoc |
 | 快速OE查询 | `modules/05-quick-oe-query/SKILL.md` | 一键 OE 查询（CLI 优先） |
 
@@ -290,7 +288,6 @@ AI 训练知识在 OE 匹配中存在根本性错误（配件类型错误、发�
 |------|------|
 | `references/setup-and-credentials.md` | 首次配置/凭据存储机制、自包含脚本用法、登录态自愈、可选 CLI 安装、Chrome CDP 细节 |
 | `references/chinese-vehicle-slang-engine-translation.md` | 车型行话 → 发动机型号 + OE 号 (200+条目) |
-| `references/17vin-section4-api.md` | 17vin Section 4/6 API 完整参考 |
 | `references/17vin-web-navigation.md` | 17vin Web 界面导航 + CDP 操作技巧 |
 | `references/17vin-partsearch-fast-verify.md` | 17vin 配件搜索快速验证方法 |
 | `references/cross-catalog-dimension-matching.md` | 跨目录尺寸匹配规则 |
