@@ -175,6 +175,17 @@ AI 训练知识在 OE 匹配中存在根本性错误（配件类型错误、发�
 
 凡查询命中睿锋后台产品（拿到 productId），输出必须带四个价格：**采购价**（`/api/product/findById`）、**OEM价格(P1)**、**品牌一级销售价(P2)**、**品牌二级销售价(P3)**（`/api/product/priceDetail`）。统一用 `scripts/product_price_query.py` 查询。报价匹配（quote-match）的 Excel 已自带 OEM价格/P1/P2/P3 列，仅需补采购价；OE 查询（oe-lookup）四价全补。价格为空显示 `—`，不阻断流程。
 
+### 12. 睿锋后台多产品优先级排序
+
+当睿锋后台查询返回多个产品时，按以下优先级排序展示：
+
+1. **status=1** 的产品排在前面（status 非 1 的排后面）
+2. 同一 status 内，按 **targetPndSource**（数组）排序：**空数组（直接 OE 匹配）> 含 1 > 含 2（无1）> 仅含 0**
+
+即最终排序：status=1 + targetPndSource 空 → status=1 + 含 1 → status=1 + 含 2 → status=1 + 仅 0 → 非1 + 空 → …
+
+Agent 展示多个产品时遵循此顺序，最优匹配的产品排在最前面。
+
 ---
 
 ## 数据源优先级
