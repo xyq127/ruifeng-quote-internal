@@ -323,6 +323,28 @@ def query_search(client: RuifengClient, keyword: str, query_type="ENCODE",
     return data.get("content", data.get("records", []))
 
 
+def query_inventory(client: RuifengClient, keyword: str, page=1, size=10) -> dict:
+    """查询产品库存信息。
+
+    使用产品 code 作为 keyword 搜索库存，返回与 /product/list 类似的分页结构。
+    单个产品调用建议 size=10，从返回的 content 中匹配对应 code 的库存记录。
+
+    Returns:
+        {
+            "content": [{"code": "...", "count": 100, "available": 80, ...}, ...],
+            "totalElements": ...,
+            "totalPages": ...,
+        }
+    """
+    resp = client.get("/api/principal/inventory/list", params={
+        "keyword": keyword, "page": page, "size": size,
+    })
+    data = resp.get("data", {})
+    if not isinstance(data, dict):
+        return {"content": [], "totalElements": 0, "totalPages": 0}
+    return data
+
+
 def query_prices(client: RuifengClient, product_id: str) -> dict:
     """查询单个产品的四个价格：采购价 + P1/P2/P3。"""
     result = {"productId": product_id, "purchasePrice": None,
