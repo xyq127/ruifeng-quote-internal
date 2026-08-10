@@ -25,11 +25,13 @@
   config-show    查看配置状态
   price          按产品 ID 查询四个价格（采购价/P1/P2/P3）
   product        按产品 ID 查询产品详情 (findById)
+  vin            按车架号(VIN)分页查询产品（/inventory/vin/list）
 
 用法示例:
   python ruifeng_platform.py config-use prod
   python ruifeng_platform.py login --mobile 13800000000
   python ruifeng_platform.py price --product-id 123 --json
+  python ruifeng_platform.py vin --vin LMXA15CF5MZ469515 --json
 """
 
 import argparse
@@ -323,27 +325,6 @@ def query_search(client: RuifengClient, keyword: str, query_type="ENCODE",
     return data.get("content", data.get("records", []))
 
 
-
-def query_product_images(client: RuifengClient, product_id: str) -> list:
-    """查询产品主图记录，仅返回 mainImage=1 且 imageType=1 的原图。"""
-    resp = client.get(
-        "/api/productImage/list",
-        params={"productId": product_id},
-    )
-    data = resp.get("data", [])
-    if isinstance(data, dict):
-        data = data.get("content", data.get("records", []))
-    if not isinstance(data, list):
-        return []
-    return [
-        image
-        for image in data
-        if isinstance(image, dict)
-        and image.get("mainImage") == 1
-        and image.get("imageType") == 1
-        and image.get("imageUrl")
-    ]
-
 def query_inventory(client: RuifengClient, keyword: str, page=1, size=10) -> dict:
     """查询产品库存信息。
 
@@ -359,6 +340,29 @@ def query_inventory(client: RuifengClient, keyword: str, page=1, size=10) -> dic
     """
     resp = client.get("/api/principal/inventory/list", params={
         "keyword": keyword, "page": page, "size": size,
+    })
+    data = resp.get("data", {})
+    if not isinstance(data, dict):
+        return {"content": [], "totalElements": 0, "totalPages": 0}
+    return data
+
+
+def query_vin(client: RuifengClient, vin: str, page=1, size=10) -> dict:
+    """按车架号(VIN)分页查询产品。
+
+    走 /inventory/vin/list 分页接口，返回与 /product/list 一致的分页结构
+    （data.content / totalElements / totalPages）。拿到 content 中的
+    productId 后可继续用 query_prices / findById 做后续查询。
+
+    Returns:
+        {
+            "content": [{"id"或"productId": ..., "code": ..., "oe": ..., ...}, ...],
+            "totalElements": ...,
+            "totalPages": ...,
+        }
+    """
+    resp = client.get("/api/principal/inventory/vin/list", params={
+        "vin": vin, "page": page, "size": size,
     })
     data = resp.get("data", {})
     if not isinstance(data, dict):
@@ -517,6 +521,25 @@ def cmd_search(args):
                   f"oe={r.get('oe', '')}  {r.get('name', '')}")
 
 
+def cmd_vin(args):
+    client = get_client()
+    _require_login(client)
+    data = query_vin(client, args.vin, page=args.page, size=args.size)
+    content = data.get("content", data.get("records", []))
+    if args.json:
+        print(json.dumps({"vin": args.vin, **data}, ensure_ascii=False, indent=2))
+    else:
+        if not content:
+            print(f"未找到该车架号匹配的产品: {args.vin}")
+            return
+        total = data.get("totalElements", 0)
+        print(f"车架号 [{args.vin}] 命中 {len(content)} 条（共 {total} 条）:")
+        for r in content:
+            pid = r.get("id") or r.get("productId") or ""
+            print(f"  productId={pid}  code={r.get('code', '')}  "
+                  f"oe={r.get('oe', '')}  {r.get('name', '')}")
+
+
 def build_parser():
     p = argparse.ArgumentParser(description="睿锋平台自包含客户端（登录 + 查询）")
     sub = p.add_subparsers(dest="command", required=True)
@@ -562,6 +585,13 @@ def build_parser():
     s.add_argument("--with-details", action="store_true", help="附带第三方详情")
     s.add_argument("--json", action="store_true")
     s.set_defaults(func=cmd_search)
+
+    s = sub.add_parser("vin", help="按车架号(VIN)分页查询产品")
+    s.add_argument("--vin", required=True, help="17位车架号 VIN 码")
+    s.add_argument("--page", type=int, default=1)
+    s.add_argument("--size", type=int, default=10)
+    s.add_argument("--json", action="store_true")
+    s.set_defaults(func=cmd_vin)
 
     return p
 
