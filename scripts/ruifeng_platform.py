@@ -26,12 +26,14 @@
   price          按产品 ID 查询四个价格（采购价/P1/P2/P3）
   product        按产品 ID 查询产品详情 (findById)
   vin            按车架号(VIN)分页查询产品（/inventory/vin/list）
+  vin-vehicle    按车架号(VIN)查询车型信息（/api/v1/sfh/vin/query）
 
 用法示例:
   python ruifeng_platform.py config-use prod
   python ruifeng_platform.py login --mobile 13800000000
   python ruifeng_platform.py price --product-id 123 --json
   python ruifeng_platform.py vin --vin LMXA15CF5MZ469515 --json
+  python ruifeng_platform.py vin-vehicle --vin LMXA15CF5MZ469515 --json
 """
 
 import argparse
@@ -225,15 +227,21 @@ class RuifengClient:
 
     # ── 请求 ──────────────────────────────────────────────────────────
 
-    def _request(self, method, path, params=None, data=None, timeout=30, _retry=True):
-        # base_url 已含 /api/principal 前缀时，去掉 path 的重复前缀
-        if path.startswith("/api/principal/"):
-            path = path[len("/api/principal"):]
-        elif path.startswith("/api/"):
-            path = path[len("/api"):]
-        if not path.startswith("/"):
-            path = f"/{path}"
-        url = f"{self.base_url}{path}"
+    def _request(self, method, path, params=None, data=None, timeout=30, _retry=True,
+                 origin=False):
+        if origin:
+            # 根域接口（如 /api/v1/sfh/vin/query）：不经 base_url 的 /api/principal 前缀
+            parsed = urlparse(self.base_url)
+            url = f"{parsed.scheme}://{parsed.netloc}{path}"
+        else:
+            # base_url 已含 /api/principal 前缀时，去掉 path 的重复前缀
+            if path.startswith("/api/principal/"):
+                path = path[len("/api/principal"):]
+            elif path.startswith("/api/"):
+                path = path[len("/api"):]
+            if not path.startswith("/"):
+                path = f"/{path}"
+            url = f"{self.base_url}{path}"
 
         try:
             resp = self.session.request(
@@ -247,7 +255,7 @@ class RuifengClient:
         if resp.status_code in (401, 403) and _retry and self._can_relogin():
             self._relogin()
             return self._request(method, path, params=params, data=data,
-                                 timeout=timeout, _retry=False)
+                                 timeout=timeout, _retry=False, origin=origin)
 
         if resp.status_code == 204:
             return {"code": 204, "msg": "操作成功", "status": True, "data": None}
@@ -263,7 +271,7 @@ class RuifengClient:
         if _retry and self._can_relogin() and _is_auth_expired(body):
             self._relogin()
             return self._request(method, path, params=params, data=data,
-                                 timeout=timeout, _retry=False)
+                                 timeout=timeout, _retry=False, origin=origin)
 
         if resp.status_code >= 400:
             raise RuntimeError(f"请求失败 HTTP {resp.status_code}: {path}")
@@ -274,6 +282,10 @@ class RuifengClient:
 
     def post(self, path, data=None, params=None):
         return self._request("POST", path, params=params, data=data)
+
+    def post_origin(self, path, data=None, timeout=30):
+        """POST 平台根域接口（不经 base_url 的 /api/principal 前缀）。"""
+        return self._request("POST", path, data=data, timeout=timeout, origin=True)
 
 
 # ── 从配置构造客户端 ──────────────────────────────────────────────────
@@ -368,6 +380,19 @@ def query_vin(client: RuifengClient, vin: str, page=1, size=10) -> dict:
     if not isinstance(data, dict):
         return {"content": [], "totalElements": 0, "totalPages": 0}
     return data
+
+
+def query_vin_vehicle(client: RuifengClient, vin: str) -> dict:
+    """按车架号(VIN)查询车型信息。
+
+    走平台根域接口 POST /api/v1/sfh/vin/query（body: {"vin": ...}），返回原始响应。
+    命中车型在 data.vehicles 列表，未命中时 data.matched=false、vehicles 为空。
+
+    Returns:
+        {"code": "SUCCESS", "data": {"vin": ..., "matched": bool,
+         "vehicles": [{"brandName": ..., "seriesName": ..., "commonName": ...}, ...]}, ...}
+    """
+    return client.post_origin("/api/v1/sfh/vin/query", data={"vin": vin})
 
 
 def query_prices(client: RuifengClient, product_id: str) -> dict:
@@ -540,6 +565,31 @@ def cmd_vin(args):
                   f"oe={r.get('oe', '')}  {r.get('name', '')}")
 
 
+def cmd_vin_vehicle(args):
+    client = get_client()
+    _require_login(client)
+    resp = query_vin_vehicle(client, args.vin)
+    if args.json:
+        print(json.dumps(resp, ensure_ascii=False, indent=2))
+        return
+    data = resp.get("data") or {}
+    vehicles = data.get("vehicles") or []
+    if not data.get("matched") or not vehicles:
+        print(f"未匹配到车型信息: {args.vin}")
+        return
+    print(f"车架号 [{args.vin}] 命中 {len(vehicles)} 个车型（数据源: {data.get('sourceType', '')}）:")
+    for v in vehicles:
+        print(f"  - {v.get('commonName') or v.get('vehicleName', '')}")
+        detail = " | ".join(
+            str(v.get(k))
+            for k in ("brandName", "seriesName", "modelYear", "cylinderCapacityLiter",
+                      "engineCode", "transmissionType", "fuelType")
+            if v.get(k)
+        )
+        if detail:
+            print(f"    ({detail})")
+
+
 def build_parser():
     p = argparse.ArgumentParser(description="睿锋平台自包含客户端（登录 + 查询）")
     sub = p.add_subparsers(dest="command", required=True)
@@ -592,6 +642,11 @@ def build_parser():
     s.add_argument("--size", type=int, default=10)
     s.add_argument("--json", action="store_true")
     s.set_defaults(func=cmd_vin)
+
+    s = sub.add_parser("vin-vehicle", help="按车架号(VIN)查询车型信息")
+    s.add_argument("--vin", required=True, help="17位车架号 VIN 码")
+    s.add_argument("--json", action="store_true")
+    s.set_defaults(func=cmd_vin_vehicle)
 
     return p
 
