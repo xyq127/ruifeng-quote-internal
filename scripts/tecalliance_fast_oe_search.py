@@ -61,8 +61,8 @@ def search(query: str, cdp_port: int = 9250, timeout: float = 10.0):
             os.makedirs(user_data_dir, exist_ok=True)
             context = p.chromium.launch_persistent_context(
                 user_data_dir=user_data_dir,
-                headless=False,
-                args=[f"--remote-debugging-port={cdp_port}", "--remote-allow-origins=*"],
+                headless=True,
+                args=[f"--remote-debugging-port={cdp_port}", "--remote-allow-origins=*", "--no-sandbox"],
                 locale="zh-CN",
             )
             page = context.new_page()

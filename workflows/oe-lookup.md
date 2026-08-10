@@ -135,6 +135,8 @@ cli-anything-platform-service --json data-clean backend-search --keyword "90363-
 
 **输出：** 匹配到的产品列表，含 productId、code、oe、关联编号、参数。
 
+**过滤：** **只保留 status=1 的上架产品**；status≠1（未上架/下架）一律剔除，不展示、不补价格。全部命中均未上架 → 标记 "后台匹配但未上架"，不输出产品与价格。
+
 **失败处理：** 后台无匹配 → 标记 "需补充"，跳过。不阻断后续。
 
 ### Step 3.5: 价格查询（仅当 Step 3 命中后台、拿到 productId 时）
@@ -221,7 +223,7 @@ python scripts/product_price_query.py --product-id <productId> --json
 |--------|-------------|--------------|--------------|
 | 18.5 | 32 | 28 | 25 |
 
-> 后台未命中（无 productId）则省略本节。价格为空显示 `—`。
+> 后台未命中（无 productId）则省略本节。价格为空显示 `—`。后台命中但产品未上架（status≠1）→ 不展示产品、不输出价格，回复「后台有匹配但未上架，暂无法报价」。
 
 ### 校验结论
 **置信度: B-待补充** — 泰安联与17vin一致，但后台未找到对应产品。
